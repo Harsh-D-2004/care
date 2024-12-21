@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PermissionModel',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name=_('ID'))),
                 ('external_id', models.UUIDField(db_index=True, default=uuid.uuid4, unique=True)),
                 ('created_date', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
                 ('modified_date', models.DateTimeField(auto_now=True, db_index=True, null=True)),
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RoleModel',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name=_('ID'))),
                 ('external_id', models.UUIDField(db_index=True, default=uuid.uuid4, unique=True)),
                 ('created_date', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
                 ('modified_date', models.DateTimeField(auto_now=True, db_index=True, null=True)),
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RoleAssociation',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name=_('ID'))),
                 ('external_id', models.UUIDField(db_index=True, default=uuid.uuid4, unique=True)),
                 ('created_date', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
                 ('modified_date', models.DateTimeField(auto_now=True, db_index=True, null=True)),
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RolePermission',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name=_('ID'))),
                 ('external_id', models.UUIDField(db_index=True, default=uuid.uuid4, unique=True)),
                 ('created_date', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
                 ('modified_date', models.DateTimeField(auto_now=True, db_index=True, null=True)),

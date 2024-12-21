@@ -104,7 +104,7 @@ class LocalBody(models.Model):
             "body_type",
             "name",
         )
-        verbose_name = "Local Body"
+        verbose_name = _("Local Body")
         verbose_name_plural = "Local Bodies"
 
     def __str__(self):
@@ -463,7 +463,7 @@ class UserFlag(BaseFlag):
         return f"User Flag: {self.user.get_full_name()} - {self.flag}"
 
     class Meta:
-        verbose_name = "User Flag"
+        verbose_name = _("User Flag")
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "flag"],

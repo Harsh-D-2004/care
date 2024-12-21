@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from care.utils.models.base import BaseFlag
 from care.utils.registries.feature_flag import FlagName, FlagType
@@ -22,7 +23,7 @@ class FacilityFlag(BaseFlag):
         return f"Facility Flag: {self.facility.name} - {self.flag}"
 
     class Meta:
-        verbose_name = "Facility Flag"
+        verbose_name = _("Facility Flag")
         constraints = [
             models.UniqueConstraint(
                 fields=["facility", "flag"],

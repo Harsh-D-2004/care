@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware, now
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -159,14 +160,14 @@ class PatientConsultationSerializer(serializers.ModelSerializer):
         many=True,
         write_only=True,
         required=False,
-        help_text="Bulk create diagnoses for the consultation upon creation",
+        help_text=_("Bulk create diagnoses for the consultation upon creation"),
     )
     diagnoses = ConsultationDiagnosisSerializer(many=True, read_only=True)
     create_symptoms = EncounterCreateSymptomSerializer(
         many=True,
         write_only=True,
         required=False,
-        help_text="Bulk create symptoms for the consultation upon creation",
+        help_text=_("Bulk create symptoms for the consultation upon creation"),
     )
     symptoms = EncounterSymptomSerializer(many=True, read_only=True)
     medico_legal_case = serializers.BooleanField(default=False, required=False)

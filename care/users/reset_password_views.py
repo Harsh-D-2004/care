@@ -40,22 +40,24 @@ HTTP_IP_ADDRESS_HEADER = getattr(
 
 class ResetPasswordCheckSerializer(serializers.Serializer):
     token = serializers.CharField(
-        write_only=True, help_text="The token that was sent to the user's email address"
+        write_only=True,
+        help_text=_("The token that was sent to the user's email address"),
     )
-    status = serializers.CharField(read_only=True, help_text="Request status")
+    status = serializers.CharField(read_only=True, help_text=_("Request status"))
 
 
 class ResetPasswordConfirmSerializer(PasswordValidateMixin, serializers.Serializer):
     token = serializers.CharField(
-        write_only=True, help_text="The token that was sent to the user's email address"
+        write_only=True,
+        help_text=_("The token that was sent to the user's email address"),
     )
-    password = serializers.CharField(write_only=True, help_text="The new password")
-    status = serializers.CharField(read_only=True, help_text="Request status")
+    password = serializers.CharField(write_only=True, help_text=_("The new password"))
+    status = serializers.CharField(read_only=True, help_text=_("Request status"))
 
 
 class ResetPasswordRequestTokenSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
-    status = serializers.CharField(read_only=True, help_text="Request status")
+    status = serializers.CharField(read_only=True, help_text=_("Request status"))
 
 
 class ResetPasswordCheck(GenericAPIView):

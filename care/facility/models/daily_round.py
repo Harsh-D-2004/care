@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import JSONField
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 
 from care.facility.models import (
     CATEGORY_CHOICES,
@@ -242,7 +243,7 @@ class DailyRound(PatientBaseModel):
     left_pupil_size = models.IntegerField(
         default=None,
         null=True,
-        verbose_name="Left Pupil Size",
+        verbose_name=_("Left Pupil Size"),
         validators=[MinValueValidator(0), MaxValueValidator(8)],
     )
     left_pupil_size_detail = models.TextField(default=None, null=True, blank=True)
@@ -255,7 +256,7 @@ class DailyRound(PatientBaseModel):
     right_pupil_size = models.IntegerField(
         default=None,
         null=True,
-        verbose_name="Right Pupil Size",
+        verbose_name=_("Right Pupil Size"),
         validators=[MinValueValidator(0), MaxValueValidator(8)],
     )
     right_pupil_size_detail = models.TextField(default=None, null=True, blank=True)
