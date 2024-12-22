@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 import django.contrib.sites.models
 from django.db import migrations, models
 
@@ -14,7 +13,7 @@ class Migration(migrations.Migration):
                 max_length=100,
                 unique=True,
                 validators=[django.contrib.sites.models._simple_domain_name_validator],
-                verbose_name=_("domain name"),
+                verbose_name="domain name",
             ),
         )
     ]

@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 import django.contrib.sites.models
 from django.contrib.sites.models import _simple_domain_name_validator
 from django.db import migrations, models
@@ -14,7 +13,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.AutoField(
-                        verbose_name=_("ID"),
+                        verbose_name="ID",
                         serialize=False,
                         auto_created=True,
                         primary_key=True,
@@ -24,11 +23,11 @@ class Migration(migrations.Migration):
                     "domain",
                     models.CharField(
                         max_length=100,
-                        verbose_name=_("domain name"),
+                        verbose_name="domain name",
                         validators=[_simple_domain_name_validator],
                     ),
                 ),
-                ("name", models.CharField(max_length=50, verbose_name=_("display name"))),
+                ("name", models.CharField(max_length=50, verbose_name="display name")),
             ],
             options={
                 "ordering": ("domain",),
