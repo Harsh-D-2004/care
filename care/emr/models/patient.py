@@ -1,6 +1,9 @@
+from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.template.defaultfilters import pluralize
+from django.utils import timezone
 
 from care.emr.models import EMRBaseModel
 from care.users.models import User
@@ -39,6 +42,28 @@ class Patient(EMRBaseModel):
 
     users_cache = ArrayField(models.IntegerField(), default=list)
 
+    def get_age(self) -> str:
+        start = self.date_of_birth or timezone.date(self.year_of_birth, 1, 1)
+        end = (self.deceased_datetime or timezone.now()).date()
+
+        delta = relativedelta(end, start)
+
+        if delta.years > 0:
+            year_str = f"{delta.years} year{pluralize(delta.years)}"
+            return f"{year_str}"
+
+        if delta.months > 0:
+            month_str = f"{delta.months} month{pluralize(delta.months)}"
+            day_str = (
+                f" {delta.days} day{pluralize(delta.days)}" if delta.days > 0 else ""
+            )
+            return f"{month_str}{day_str}"
+
+        if delta.days > 0:
+            return f"{delta.days} day{pluralize(delta.days)}"
+
+        return "0 days"
+
     def rebuild_organization_cache(self):
         organization_parents = []
         if self.geo_organization:
@@ -56,16 +81,21 @@ class Patient(EMRBaseModel):
         self.organization_cache = list(set(organization_parents))
 
     def rebuild_users_cache(self):
-        users = list(
-            PatientUser.objects.filter(patient=self).values_list("user_id", flat=True)
-        )
-        self.users_cache = users
+        if self.id:
+            users = list(
+                PatientUser.objects.filter(patient=self).values_list(
+                    "user_id", flat=True
+                )
+            )
+            self.users_cache = users
 
     def save(self, *args, **kwargs) -> None:
-        self.rebuild_organization_cache()
         if self.date_of_birth and not self.year_of_birth:
             self.year_of_birth = self.date_of_birth.year
         super().save(*args, **kwargs)
+        self.rebuild_organization_cache()
+        self.rebuild_users_cache()
+        super().save(update_fields=["organization_cache", "users_cache"])
 
 
 class PatientOrganization(EMRBaseModel):
@@ -75,8 +105,7 @@ class PatientOrganization(EMRBaseModel):
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
-        self.patient.rebuild_organization_cache()
-        self.patient.save(update_fields=["organization_cache"])
+        self.patient.save()
 
 
 class PatientUser(EMRBaseModel):

@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
 
 from care.emr.api.viewsets.base import EMRModelViewSet
-from care.emr.models.organziation import FacilityOrganization, FacilityOrganizationUser
+from care.emr.models.organization import FacilityOrganization, FacilityOrganizationUser
 from care.emr.resources.facility_organization.facility_orgnization_user_spec import (
     FacilityOrganizationUserReadSpec,
     FacilityOrganizationUserUpdateSpec,
@@ -52,7 +52,9 @@ class FacilityOrganizationViewSet(EMRModelViewSet):
                 FacilityOrganization, external_id=instance.parent
             )
             if parent.org_type == "root":
-                raise PermissionDenied("Cannot create multiple root organizations")
+                raise PermissionDenied(
+                    "Cannot create organizations under root organization"
+                )
 
     def authorize_delete(self, instance):
         if instance.type == "root":

@@ -1,4 +1,4 @@
-from care.emr.models.organziation import FacilityOrganizationUser
+from care.emr.models.organization import FacilityOrganizationUser
 from care.emr.resources.encounter.constants import COMPLETED_CHOICES
 from care.security.authorization.base import (
     AuthorizationController,
@@ -22,6 +22,19 @@ class EncounterAccess(AuthorizationHandler):
         """
         return self.check_permission_in_facility_organization(
             [EncounterPermissions.can_read_encounter.name],
+            user,
+            orgs=encounter.facility_organization_cache,
+        )
+
+    def can_submit_encounter_questionnaire_obj(self, user, encounter):
+        """
+        Check if the user has permission to read encounter under this facility
+        """
+        if encounter.status in COMPLETED_CHOICES:
+            # Cannot write to a closed encounter
+            return False
+        return self.check_permission_in_facility_organization(
+            [EncounterPermissions.can_submit_encounter_questionnaire.name],
             user,
             orgs=encounter.facility_organization_cache,
         )

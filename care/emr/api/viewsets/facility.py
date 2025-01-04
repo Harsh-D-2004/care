@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from care.emr.api.viewsets.base import EMRModelReadOnlyViewSet, EMRModelViewSet
 from care.emr.models import Organization, SchedulableUserResource
-from care.emr.models.organziation import FacilityOrganizationUser, OrganizationUser
+from care.emr.models.organization import FacilityOrganizationUser, OrganizationUser
 from care.emr.resources.facility.spec import (
     FacilityCreateSpec,
     FacilityReadSpec,
@@ -104,7 +104,7 @@ class FacilitySchedulableUsersViewSet(EMRModelReadOnlyViewSet):
         return User.objects.filter(
             id__in=SchedulableUserResource.objects.filter(
                 facility__external_id=self.kwargs["facility_external_id"]
-            ).values("resource_id")
+            ).values("user_id")
         )
 
 

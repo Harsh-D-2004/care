@@ -6,6 +6,7 @@ from pydantic import UUID4, BaseModel, Field, field_validator
 from care.emr.fhir.schema.base import Coding
 from care.emr.models.encounter import Encounter
 from care.emr.models.medication_request import MedicationRequest
+from care.emr.registries.care_valueset.care_valueset import validate_valueset
 from care.emr.resources.base import EMRResource
 from care.emr.resources.medication.valueset.additional_instruction import (
     CARE_ADDITIONAL_INSTRUCTION_VALUESET,
@@ -121,23 +122,72 @@ class DosageInstruction(BaseModel):
     sequence: int | None = None
     text: str | None = None
     additional_instruction: list[Coding] | None = Field(
-        json_schema_extra={"slug": CARE_ADDITIONAL_INSTRUCTION_VALUESET.slug}
+        None, json_schema_extra={"slug": CARE_ADDITIONAL_INSTRUCTION_VALUESET.slug}
     )
     patient_instruction: str | None = None
     timing: Timing | None = None
     as_needed_boolean: bool | None = None
     as_needed_for: Coding | None = Field(
-        json_schema_extra={"slug": CARE_AS_NEEDED_REASON_VALUESET.slug}
+        None, json_schema_extra={"slug": CARE_AS_NEEDED_REASON_VALUESET.slug}
     )
     site: Coding | None = Field(
-        json_schema_extra={"slug": CARE_BODY_SITE_VALUESET.slug}
+        None, json_schema_extra={"slug": CARE_BODY_SITE_VALUESET.slug}
     )
-    route: Coding | None = Field(json_schema_extra={"slug": CARE_ROUTE_VALUESET.slug})
+    route: Coding | None = Field(
+        None, json_schema_extra={"slug": CARE_ROUTE_VALUESET.slug}
+    )
     method: Coding | None = Field(
-        json_schema_extra={"slug": CARE_ADMINISTRATION_METHOD_VALUESET.slug}
+        None, json_schema_extra={"slug": CARE_ADMINISTRATION_METHOD_VALUESET.slug}
     )
     dose_and_rate: DoseAndRate | None = None
     max_dose_per_period: DoseRange | None = None
+
+    @field_validator("additional_instruction")
+    @classmethod
+    def validate_additional_instruction(cls, codes):
+        if not codes:
+            return codes
+        return [
+            validate_valueset(
+                "additional_instruction",
+                cls.model_fields["additional_instruction"].json_schema_extra["slug"],
+                code,
+            )
+            for code in codes
+        ]
+
+    @field_validator("site")
+    @classmethod
+    def validate_site(cls, code):
+        if not code:
+            return code
+        return validate_valueset(
+            "site",
+            cls.model_fields["site"].json_schema_extra["slug"],
+            code,
+        )
+
+    @field_validator("route")
+    @classmethod
+    def validate_route(cls, code):
+        if not code:
+            return code
+        return validate_valueset(
+            "route",
+            cls.model_fields["route"].json_schema_extra["slug"],
+            code,
+        )
+
+    @field_validator("method")
+    @classmethod
+    def validate_method(cls, code):
+        if not code:
+            return code
+        return validate_valueset(
+            "method",
+            cls.model_fields["method"].json_schema_extra["slug"],
+            code,
+        )
 
 
 class BaseMedicationRequestSpec(EMRResource):
@@ -181,7 +231,7 @@ class BaseMedicationRequestSpec(EMRResource):
         description="When request was initially authored",
     )
 
-    dosage_instruction: DosageInstruction = Field(
+    dosage_instruction: list[DosageInstruction] = Field(
         description="Dosage instructions for the medication",
     )
 
@@ -196,6 +246,15 @@ class MedicationRequestSpec(BaseMedicationRequestSpec):
             err = "Encounter not found"
             raise ValueError(err)
         return encounter
+
+    @field_validator("medication")
+    @classmethod
+    def validate_medication(cls, code):
+        return validate_valueset(
+            "medication",
+            cls.model_fields["medication"].json_schema_extra["slug"],
+            code,
+        )
 
     def perform_extra_deserialization(self, is_update, obj):
         if not is_update:

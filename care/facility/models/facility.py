@@ -10,7 +10,7 @@ from rest_framework import serializers
 from simple_history.models import HistoricalRecords
 
 from care.emr.models import FacilityOrganization
-from care.emr.models.organziation import FacilityOrganizationUser
+from care.emr.models.organization import FacilityOrganizationUser
 from care.facility.models import FacilityBaseModel, reverse_choices
 from care.facility.models.facility_flag import FacilityFlag
 from care.facility.models.mixins.permissions.facility import (
@@ -354,7 +354,7 @@ class Facility(FacilityBaseModel, FacilityPermissionMixin):
         if is_create:
             facility_organization = FacilityOrganization.objects.create(
                 org_type="root",
-                name="Root Organization",
+                name="Administration",
                 system_generated=True,
                 facility=self,
             )

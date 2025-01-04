@@ -35,13 +35,13 @@ class EncounterPermissions(enum.Enum):
         "Can write encounter",
         "",
         PermissionContext.ENCOUNTER,
-        ALL_ROLES,
+        CLINICAL_DATA_ACCESS_ROLES,
     )
     can_list_encounter = Permission(
         "Can list encounters",
         "Clinical data is not associated with this permission",
         PermissionContext.ENCOUNTER,
-        ALL_ROLES,
+        CLINICAL_DATA_ACCESS_ROLES,
     )
     can_write_encounter = Permission(
         "Update Encounter and Create all associated datapoints",
@@ -54,4 +54,16 @@ class EncounterPermissions(enum.Enum):
         "",
         PermissionContext.ENCOUNTER,
         CLINICAL_DATA_ACCESS_ROLES,
+    )
+    can_submit_encounter_questionnaire = Permission(
+        "Can submit questionnaire about patient encounters",
+        "",
+        PermissionContext.PATIENT,
+        [
+            STAFF_ROLE,
+            DOCTOR_ROLE,
+            NURSE_ROLE,
+            ADMIN_ROLE,
+            FACILITY_ADMIN_ROLE,
+        ],
     )

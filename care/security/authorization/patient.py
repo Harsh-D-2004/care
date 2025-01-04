@@ -1,7 +1,8 @@
 from django.db.models import Q
 
 from care.emr.models import Encounter, PatientUser
-from care.emr.models.organziation import FacilityOrganizationUser, OrganizationUser
+from care.emr.models.organization import FacilityOrganizationUser, OrganizationUser
+from care.emr.resources.encounter.constants import COMPLETED_CHOICES
 from care.security.authorization.base import (
     AuthorizationController,
     AuthorizationHandler,
@@ -14,8 +15,10 @@ class PatientAccess(AuthorizationHandler):
     def find_roles_on_patient(self, user, patient):
         role_ids = set()
         # Through Encounter
-        encounters = Encounter.objects.filter(patient=patient).values_list(
-            "facility_organization_cache", flat=True
+        encounters = (
+            Encounter.objects.filter(patient=patient)
+            .exclude(status__in=COMPLETED_CHOICES)
+            .values_list("facility_organization_cache", flat=True)
         )
         encounter_set = set()
         for encounter in encounters:
@@ -35,8 +38,6 @@ class PatientAccess(AuthorizationHandler):
         )
         return role_ids.union(set(roles))
 
-
-
     def can_view_patient_obj(self, user, patient):
         if user.is_superuser:
             return True
@@ -55,12 +56,21 @@ class PatientAccess(AuthorizationHandler):
             role__in=user_roles,
         ).exists()
 
+    def can_submit_questionnaire_patient_obj(self, user, patient):
+        if user.is_superuser:
+            return True
+        user_roles = self.find_roles_on_patient(user, patient)
+        return RolePermission.objects.filter(
+            permission__slug__in=[
+                PatientPermissions.can_submit_patient_questionnaire.name
+            ],
+            role__in=user_roles,
+        ).exists()
+
     def can_create_patient(self, user):
         return self.check_permission_in_facility_organization(
-            [PatientPermissions.can_create_patient.name],
-            user
+            [PatientPermissions.can_create_patient.name], user
         )
-
 
     def can_view_clinical_data(self, user, patient):
         if user.is_superuser:
@@ -68,6 +78,17 @@ class PatientAccess(AuthorizationHandler):
         user_roles = self.find_roles_on_patient(user, patient)
         return RolePermission.objects.filter(
             permission__slug__in=[PatientPermissions.can_view_clinical_data.name],
+            role__in=user_roles,
+        ).exists()
+
+    def can_view_patient_questionnaire_responses(self, user, patient):
+        if user.is_superuser:
+            return True
+        user_roles = self.find_roles_on_patient(user, patient)
+        return RolePermission.objects.filter(
+            permission__slug__in=[
+                PatientPermissions.can_view_questionnaire_responses.name
+            ],
             role__in=user_roles,
         ).exists()
 
