@@ -46,7 +46,7 @@ class PatientViewSet(EMRModelViewSet):
         if not AuthorizationController.call("can_create_patient", self.request.user):
             raise PermissionDenied("Cannot Create Patient")
 
-    def authorize_delete(self, instance):
+    def authorize_destroy(self, instance):
         if not self.request.user.is_superuser:
             raise PermissionDenied("Cannot delete patient")
 
@@ -65,11 +65,10 @@ class PatientViewSet(EMRModelViewSet):
             ):
                 return qs.filter(external_id=self.kwargs.get("external_id"))
 
-        if self.request.GET.get("geo_organization"):
+        if self.request.GET.get("organization"):
             geo_organization = get_object_or_404(
                 Organization,
-                external_id=self.request.GET["geo_organization"],
-                org_type="govt",
+                external_id=self.request.GET["organization"],
             )
             qs = qs.filter(organization_cache__overlap=[geo_organization.id])
         return AuthorizationController.call(

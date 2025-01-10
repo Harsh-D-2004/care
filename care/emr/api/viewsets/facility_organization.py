@@ -1,7 +1,9 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 
 from care.emr.api.viewsets.base import EMRModelViewSet
 from care.emr.models.organization import FacilityOrganization, FacilityOrganizationUser
@@ -55,8 +57,15 @@ class FacilityOrganizationViewSet(EMRModelViewSet):
                 raise PermissionDenied(
                     "Cannot create organizations under root organization"
                 )
+        # Validate Uniqueness
+        if FacilityOrganization.validate_uniqueness(
+            FacilityOrganization.objects.filter(facility=self.get_facility_obj()),
+            instance,
+            model_obj,
+        ):
+            raise ValidationError("Organization already exists with same name")
 
-    def authorize_delete(self, instance):
+    def authorize_destroy(self, instance):
         if instance.type == "root":
             raise PermissionDenied("Cannot delete root organization")
 
@@ -126,6 +135,20 @@ class FacilityOrganizationViewSet(EMRModelViewSet):
             facility,
         )
 
+    @action(detail=False, methods=["GET"])
+    def mine(self, request, *args, **kwargs):
+        """
+        Get organizations that are directly attached to the given user
+        """
+        orgusers = FacilityOrganizationUser.objects.filter(
+            user=request.user, organization__facility=self.get_facility_obj()
+        ).select_related("organization")
+        data = [
+            self.get_read_pydantic_model().serialize(orguser.organization).to_json()
+            for orguser in orgusers
+        ]
+        return Response({"count": len(data), "results": data})
+
 
 class FacilityOrganizationUsersViewSet(EMRModelViewSet):
     database_model = FacilityOrganizationUser
@@ -166,7 +189,7 @@ class FacilityOrganizationUsersViewSet(EMRModelViewSet):
         if queryset.exists():
             raise ValidationError("User association already exists")
 
-    def authorize_delete(self, instance):
+    def authorize_destroy(self, instance):
         organization = self.get_organization_obj()
         if not AuthorizationController.call(
             "can_manage_facility_organization_users_obj",

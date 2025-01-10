@@ -1,7 +1,9 @@
 from enum import Enum
 
 from django.contrib.auth.password_validation import validate_password
-from pydantic import UUID4, field_validator
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from pydantic import UUID4, Field, field_validator
 from rest_framework.generics import get_object_or_404
 
 from care.emr.models import Organization
@@ -33,7 +35,7 @@ class UserBaseSpec(EMRResource):
 
     first_name: str
     last_name: str
-    phone_number: str
+    phone_number: str = Field(max_length=14)
 
 
 class UserUpdateSpec(UserBaseSpec):
@@ -53,6 +55,17 @@ class UserCreateSpec(UserUpdateSpec):
         if User.objects.filter(username=username).exists():
             raise ValueError("Username already exists")
         return username
+
+    @field_validator("email")
+    @classmethod
+    def validate_user_email(cls, email):
+        if User.objects.filter(email=email).exists():
+            raise ValueError("Email already exists")
+        try:
+            validate_email(email)
+        except ValidationError as e:
+            raise ValueError("Invalid Email") from e
+        return email
 
     @field_validator("password")
     @classmethod

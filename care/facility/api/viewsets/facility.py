@@ -36,7 +36,7 @@ from care.utils.queryset.facility import get_facility_queryset
 class GeoOrganizationFilter(filters.UUIDFilter):
     def filter(self, qs, value):
         if value:
-            organization = Organization.objects.get(external_id=value, org_type="govt")
+            organization = get_object_or_404(Organization, external_id=value)
             return qs.filter(geo_organization_cache__overlap=[organization.id])
         return qs
 
@@ -44,7 +44,7 @@ class GeoOrganizationFilter(filters.UUIDFilter):
 class FacilityFilter(filters.FilterSet):
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     facility_type = filters.NumberFilter(field_name="facility_type")
-    geo_organization = GeoOrganizationFilter()
+    organization = GeoOrganizationFilter()
 
 
 class FacilityViewSet(
@@ -56,9 +56,7 @@ class FacilityViewSet(
 ):
     """Viewset for facility CRUD operations."""
 
-    queryset = Facility.objects.all().select_related(
-        "ward", "local_body", "district", "state"
-    )
+    queryset = Facility.objects.all().select_related()
     filter_backends = (
         filters.DjangoFilterBackend,
         drf_filters.SearchFilter,
@@ -66,7 +64,7 @@ class FacilityViewSet(
     filterset_class = FacilityFilter
     lookup_field = "external_id"
 
-    search_fields = ["name", "district__name", "state__name"]
+    search_fields = ["name"]
 
     FACILITY_CAPACITY_CSV_KEY = "capacity"
     FACILITY_DOCTORS_CSV_KEY = "doctors"
@@ -159,7 +157,8 @@ class AllFacilityViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = ()
-    queryset = Facility.objects.all().select_related("local_body", "district", "state")
+    authentication_classes = ()
+    queryset = Facility.objects.filter(is_public=True).select_related()
     serializer_class = FacilityBasicInfoSerializer
     filter_backends = (filters.DjangoFilterBackend, drf_filters.SearchFilter)
     filterset_class = FacilityFilter
